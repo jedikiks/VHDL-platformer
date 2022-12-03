@@ -25,15 +25,15 @@ use ieee.math_real.ceil;
 entity my_ps2read is
 	port (resetn, clock: in std_logic;
 			ps2c, ps2d: in std_logic;
-            DOUT: out std_logic_vector (7 downto 0); -- FIXME: prof had this as a 10 bit signal when he meant 8bit ?
+            DOUT: out std_logic_vector (9 downto 0);
 			done: out std_logic);
 end my_ps2read;
 
 architecture Behavioral of my_ps2read is
 
-	component my_genpulse
+	component my_genpulse_sclr
 		generic (COUNT: INTEGER:= (10**8)/2); -- (10**8)/2 cycles of T = 10 ns --> 0.5 s
-		port (clock, resetn, E: in std_logic;
+		port (clock, resetn, E, sclr: in std_logic;
 				Q: out std_logic_vector ( integer(ceil(log2(real(COUNT)))) - 1 downto 0);
 				z: out std_logic);
 	end component;
@@ -66,8 +66,8 @@ architecture Behavioral of my_ps2read is
 begin
 
 -- Counter: Modulo-10
-gb: my_genpulse generic map (COUNT => 10) 
-	 port map (clock => clock, resetn => resetn, E => EQ, z => zQ);
+gb: my_genpulse_sclr generic map (COUNT => 10) 
+	 port map (clock => clock, resetn => resetn, sclr => '0', E => EQ, z => zQ);
 	
 -- Shift Register
 sa: my_pashiftreg generic map (N => 10, DIR => "RIGHT")
