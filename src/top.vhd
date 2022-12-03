@@ -34,11 +34,18 @@ architecture structure of top is
 	end component;
 
 	component vga_ctrl 
-        port(clock, resetn : in std_logic;
-	    	 HS, VS : out std_logic;
-	    	 vga_tick : inout std_logic;
-	    	 HC, VC : inout std_logic_vector(9 downto 0);
-	    	 display_on : out std_logic);
+    generic( RGB_BITS : integer := 12;
+             PLAYER_WIDTH: integer:= 4;
+             PLAYER_HEIGHT: integer:= 4;
+             BOX_WIDTH: integer:= 200; 
+             BOX_HEIGHT: integer:= 200;
+             LINE_THICK: integer:= 2
+           );
+    port( clock, resetn: in std_logic;
+          x, y: in std_logic_vector( 9 downto 0 );
+          RGB : out std_logic_vector(RGB_BITS-1 downto 0);
+          HS, VS : out std_logic
+        );
 	end component;
 
 	component my_ps2keyboard 
