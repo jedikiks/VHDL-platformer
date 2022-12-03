@@ -4,14 +4,15 @@ use ieee.numeric_std.all;
 
 entity top is
     generic( X_IM: integer := 320; -- These change initial
-             Y_IM: integer := 240  -- starting positions
+             Y_IM: integer := 240;  -- starting positions
+             RGB_BITS: integer := 12
            );
 	port ( clock, resetn: in std_logic;
+           SW: in std_logic_vector( 3 downto 0 ); -- Switches that control canMove___
            ps2c, ps2d: in std_logic;
            HS, VS: out std_logic;
-           vga_tick: inout std_logic;
-           HC, VC: inout std_logic_vector( 9 downto 0 );
-           display_on: out std_logic
+           RGB : out std_logic_vector(RGB_BITS-1 downto 0);
+           LED: out std_logic_vector( 3 downto 0 )
       	 );
 end top;
 
@@ -33,19 +34,19 @@ architecture structure of top is
           	 );
 	end component;
 
-	component vga_ctrl 
-    generic( RGB_BITS : integer := 12;
-             PLAYER_WIDTH: integer:= 4;
-             PLAYER_HEIGHT: integer:= 4;
-             BOX_WIDTH: integer:= 200; 
-             BOX_HEIGHT: integer:= 200;
-             LINE_THICK: integer:= 2
+	component vga_display 
+       generic( RGB_BITS : integer := 12;
+                PLAYER_WIDTH: integer:= 4;
+                PLAYER_HEIGHT: integer:= 4;
+                BOX_WIDTH: integer:= 200; 
+                BOX_HEIGHT: integer:= 200;
+                LINE_THICK: integer:= 2
+              );
+       port( clock, resetn: in std_logic;
+             x, y: in std_logic_vector( 9 downto 0 );
+             RGB : out std_logic_vector(RGB_BITS-1 downto 0);
+             HS, VS : out std_logic
            );
-    port( clock, resetn: in std_logic;
-          x, y: in std_logic_vector( 9 downto 0 );
-          RGB : out std_logic_vector(RGB_BITS-1 downto 0);
-          HS, VS : out std_logic
-        );
 	end component;
 
 	component my_ps2keyboard 
@@ -59,6 +60,8 @@ begin
 
     X_immediate <= std_logic_vector( to_unsigned( X_IM, X_immediate'length ) ); 
     Y_immediate <= std_logic_vector( to_unsigned( Y_IM, Y_immediate'length ) ); 
+
+    LED <= SW;
 
     phy: physics port map( clock => clock,
                            resetn => resetn,
@@ -74,10 +77,10 @@ begin
                            moveUp => jump,
                            posX => posX,
                            posY => posY,
-                           canFall => canFall,
-                           canMoveLeft => canMoveLeft,
-                           canMoveRight => canMoveRight,
-                           canMoveUp => canMoveUp
+                           canFall => SW( 0 ),
+                           canMoveLeft => SW( 1 ),
+                           canMoveRight => SW( 2 ),
+                           canMoveUp => SW( 3 )
                          );
     ps2kb: my_ps2keyboard port map( clock => clock,
                                     resetn => resetn,
@@ -86,13 +89,18 @@ begin
                                     DOUT => dout,
                                     done => ps2_done
                                   );
-    vga: vga_ctrl port map( clock => clock,
-                            resetn => resetn,
-                            HS => HS,
-                            VS => VS,
-                            vga_tick => vga_tick,
-                            HC => HC,
-                            VC => VC,
-                            display_on => display_on
-                          );
+    vga: vga_display generic map( RGB_BITS => RGB_BITS,
+                                  PLAYER_WIDTH => 4,
+                                  PLAYER_HEIGHT => 4,
+                                  BOX_WIDTH => 4,
+                                  BOX_HEIGHT => 4,
+                                  LINE_THICK => 4
+                                )
+                     port map( clock => clock,
+                               resetn => resetn,
+                               x => posX,
+                               y => posY,
+                               HS => HS,
+                               VS => VS
+                            );
 end;

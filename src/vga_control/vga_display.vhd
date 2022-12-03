@@ -106,13 +106,15 @@ begin
             -- Draw the player:
             ---------------------------------------------------------------------------------------------------------
             if( (
-                    ( HC >= std_logic_vector( to_unsigned( x, HC'length ) ) ) and
-                    ( HC < std_logic_vector( to_unsigned( ( x + PLAYER_WIDTH ), HC'length ) ) )
+                    ( HC >= std_logic_vector( to_unsigned( to_integer( unsigned( x ) ) , HC'length ) ) ) and
+	                ( HC < std_logic_vector( to_unsigned( to_integer( unsigned( x ) ) + PLAYER_WIDTH, HC'length ) ) )
                 )
                 and
-                    ( VC >= std_logic_vector( to_unsigned( y, VC'length ) ) ) and
-                    ( VC < std_logic_vector( to_unsigned( ( y + PLAYER_WIDTH ), VC'length ) ) )
-                )then
+                (
+                    ( VC >= std_logic_vector( to_unsigned( to_integer( unsigned( y ) ) , VC'length ) ) ) and
+	                ( VC < std_logic_vector( to_unsigned( to_integer( unsigned( y ) ) + PLAYER_HEIGHT, VC'length ) ) )
+                )
+            )then
                 RGBd <= x"F00";
             end if;
 
