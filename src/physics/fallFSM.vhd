@@ -32,7 +32,7 @@ architecture Behavioral of fallFSM is
 begin
     sclrQ <= sclrQ_t;
     
-	pg: my_genpulse_sclr generic map( COUNT => 4 ) -- TODO: change this to non-tb value
+	pg: my_genpulse_sclr generic map( COUNT => (10**6)/3 ) -- TODO: change this to non-tb value
 		     	     port map( clock => clock,
 				       resetn => resetn,
 				       E => EQ,

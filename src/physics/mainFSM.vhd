@@ -33,21 +33,22 @@ component my_genpulse_sclr is
 	
 begin
 
-	jpx: my_genpulse_sclr generic map( COUNT => 4 ) -- TODO: change this to non-tb value
+	jpx: my_genpulse_sclr generic map( COUNT => 75 ) -- TODO: change this to non-tb value
 		     	     port map( clock => clock,
 				       resetn => resetn,
 				       E => jumpPx_EQ,
 				       sclr => jumpPx_sclrQ,
 				       z => jumpPx_zQ
 				     );
-	jw: my_genpulse_sclr generic map( COUNT => 4 ) -- TODO: change this to non-tb value
+	jw: my_genpulse_sclr generic map( COUNT => (10**6)/3 ) -- TODO: change this to non-tb value
 		     	     port map( clock => clock,
 				       resetn => resetn,
 				       E => jwait_EQ,
 				       sclr => jwait_sclrQ,
 				       z => jwait_zQ
 				     );
-	mw: my_genpulse_sclr generic map( COUNT => 4 ) -- TODO: change this to non-tb value
+	--mw: my_genpulse_sclr generic map( COUNT => (10**3)/3 ) -- TODO: change this to non-tb value
+	mw: my_genpulse_sclr generic map( COUNT => 1 ) -- TODO: change this to non-tb value
 		     	     port map( clock => clock,
 				       resetn => resetn,
 				       E => mwait_EQ,
@@ -64,26 +65,25 @@ begin
 				when S0 => y <= S1;
 				when S1 =>
 				    if  E_phy = '1' then
-						if ps2_done = '1' then
+				--		if ps2_done = '1' then
 							y <= S2;
-						else y <= S1;
-						end if;
+						--else y <= S1;
+						--end if;
 					else y <= S1;
 				    end if;
 
-				when S2 =>
-					if fall_done='1' then y <= S3; else y <= S2; end if;
+				when S2 => if fall_done='1' then y <= S3; else y <= S2; end if;
 					
-				when S3 =>	
-					if din = x"29" then y <= S4;
-                        elsif din = x"23" and canMoveLeft = '1' then y <= S5b;
-						elsif din = x"1C" and canMoveRight <= '1' then y <= S5b; 
-                        else y <= S1;
-                    end if;
+				when S3 => if ps2_done = '1' then
+						   if din = x"29" then y <= S4;
+				                   	--elsif din = x"23" and canMoveLeft = '1' then y <= S5b;
+						   	--elsif din = x"1C" and canMoveRight = '1' then y <= S5b; 
+        	               			   	--else y <= S1;
+						   end if;
+					   else y <= S1;
+					   end if;
 					
-				when S4 =>
-                    if canMoveUp = '1' then y <= S5a; else y <= S1; end if;
-
+				when S4 => if canMoveUp = '1' then y <= S5a; else y <= S1; end if;
                 when S5a =>
                     if jwait_zQ = '1' then
                         if jumpPx_zQ = '1' then y <= S1;
@@ -91,8 +91,8 @@ begin
                         end if;
                     else y <= S5a; end if;
 
-                when S5b =>
-                    if mwait_zQ = '1' then y <= S1; else y <= S5b; end if;
+                when S5b => y <= S1;
+                 --   if mwait_zQ = '1' then y <= S1; else y <= S5b; end if;
                                     
                 end case;
 		end if;
@@ -109,7 +109,8 @@ begin
 		case y is	
 			when S0 => posY_E_main <= '1'; l_r <= "10"; posX_E <= '1';	
 			
-			when S1 => if  E_phy = '1' and ps2_done = '1' then check_fall <= '1'; end if;
+			when S1 => check_fall <= '1';
+			--when S1 => if  E_phy = '1' and ps2_done = '1' then check_fall <= '1'; end if;
 						-- if E_phy <= '1' then 
 							-- if ps2_done <= '1' then 
 								-- check_fall <= '1';
@@ -118,14 +119,16 @@ begin
 
             when S2 => E_addr_sel <= '1'; posY_E_sel <= '1';
 			
-			when S3 => if din = x"23" then
+	    when S3 => if ps2_done = '1' then --<= '1' then <== you keep doing this
+				if din = x"1C" then
                                 moveLeft <= '1'; E_addr_main <= '1'; addr_sel <= "00"; 
 		    		            if canMoveLeft = '1' then posX_E <= '1'; end if;
 		    		        end if;
-		    		        if din = x"1C" then
+	    		        if din = x"23" then
                                 moveRight <= '1'; E_addr_main <= '1'; addr_sel <= "01"; l_r <= "01";
 		    		            if canMoveRight = '1' then posX_E <= '1'; end if;
 		    		        end if;
+				end if;
 
             when S4 => moveUp <= '1'; addr_sel <= "10"; E_addr_main <= '1'; 
                        if canMoveUp = '1' then posY_E_main <= '1'; end if;

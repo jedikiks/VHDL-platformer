@@ -8,7 +8,9 @@ entity vga_display is
              PLAYER_HEIGHT: integer:= 4;
              BOX_WIDTH: integer:= 200; 
              BOX_HEIGHT: integer:= 200;
-             LINE_THICK: integer:= 2
+             LINE_THICK: integer:= 2;
+             PLATFORM_WIDTH: integer:= 40;
+             PLATFORM_HEIGHT: integer:= 5
            );
     port( clock, resetn: in std_logic;
           x, y: in std_logic_vector( 9 downto 0 );
@@ -54,8 +56,8 @@ begin
                 )
                 and
                 (
-                    ( VC >= std_logic_vector( to_unsigned( 240 , HC'length ) ) ) and
-                    ( VC < std_logic_vector( to_unsigned( ( 240 + LINE_THICK ), HC'length ) ) )
+                    ( VC >= std_logic_vector( to_unsigned( ( 240 - ( BOX_HEIGHT / 2 ) ) , VC'length ) ) ) and
+                    ( VC < std_logic_vector( to_unsigned( ( ( 240 - ( BOX_HEIGHT / 2 ) ) + LINE_THICK ), VC'length ) ) )
                 )
             )then
                 RGBd <= x"FFF";
@@ -68,34 +70,34 @@ begin
                 )
                 and
                 (
-                    ( VC >= std_logic_vector( to_unsigned( 240 + BOX_HEIGHT , VC'length ) ) ) and
-                    ( VC < std_logic_vector( to_unsigned( ( 240 + BOX_HEIGHT + 1 ), VC'length ) ) )
+                    ( VC >= std_logic_vector( to_unsigned( ( 240 + ( BOX_HEIGHT / 2 ) ) , VC'length ) ) ) and
+                    ( VC < std_logic_vector( to_unsigned( ( ( 240 + ( BOX_HEIGHT / 2 ) ) + LINE_THICK ), VC'length ) ) )
                 )
             )then
                 RGBd <= x"FFF";
             end if;
-
+ 
             -- Left Line
             if( (
-                    ( HC >= std_logic_vector( to_unsigned( ( 320 - ( BOX_WIDTH / 2 ) ), HC'length ) ) )
+                    ( HC = std_logic_vector( to_unsigned( ( 320 - ( BOX_WIDTH / 2 ) ), HC'length ) ) )
                 )
                 and
                 (
-                    ( VC >= std_logic_vector( to_unsigned( 240, VC'length ) ) ) and
-                    ( VC < std_logic_vector( to_unsigned( ( 240 + BOX_HEIGHT ), VC'length ) ) )
+                    ( VC >= std_logic_vector( to_unsigned( ( 240 - ( BOX_HEIGHT / 2 ) ), VC'length ) ) ) and
+                    ( VC < std_logic_vector( to_unsigned( ( 240 + ( BOX_HEIGHT / 2 ) ), VC'length ) ) )
                 )
             )then
                 RGBd <= x"FFF";
             end if;
-
+ 
             -- Right Line
             if( (
-                    ( HC >= std_logic_vector( to_unsigned( ( 320 + ( BOX_WIDTH / 2 ) ), HC'length ) ) )
+                    ( HC = std_logic_vector( to_unsigned( ( 320 + ( BOX_WIDTH / 2 ) ), HC'length ) ) )
                 )
                 and
                 (
-                    ( VC >= std_logic_vector( to_unsigned( 240, VC'length ) ) ) and
-                    ( VC < std_logic_vector( to_unsigned( ( 240 + BOX_HEIGHT ), VC'length ) ) )
+                    ( VC >= std_logic_vector( to_unsigned( ( 240 - ( BOX_HEIGHT / 2 ) ), VC'length ) ) ) and
+                    ( VC < std_logic_vector( to_unsigned( ( 240 + ( BOX_HEIGHT / 2 ) ), VC'length ) ) )
                 )
             )then
                 RGBd <= x"FFF";
@@ -103,7 +105,7 @@ begin
 
 
             ---------------------------------------------------------------------------------------------------------
-            -- Draw the player:
+            -- Draw player
             ---------------------------------------------------------------------------------------------------------
             if( (
                     ( HC >= std_logic_vector( to_unsigned( to_integer( unsigned( x ) ) , HC'length ) ) ) and
@@ -115,7 +117,49 @@ begin
 	                ( VC < std_logic_vector( to_unsigned( to_integer( unsigned( y ) ) + PLAYER_HEIGHT, VC'length ) ) )
                 )
             )then
-                RGBd <= x"F00";
+                RGBd <= x"00F";
+            end if;
+
+            ---------------------------------------------------------------------------------------------------------
+            -- Draw platforms 
+            ---------------------------------------------------------------------------------------------------------
+	    -- Top most
+            if( (
+                    ( HC >= std_logic_vector( to_unsigned( ( 320 - ( PLATFORM_WIDTH / 2 ) ), HC'length ) ) ) and
+                    ( HC < std_logic_vector( to_unsigned( ( 320 + ( PLATFORM_WIDTH / 2 ) ), HC'length ) ) )
+                )
+                and
+                (
+                    VC = std_logic_vector( to_unsigned( ( ( 240 + 75 ) + ( PLATFORM_HEIGHT / 2 ) ) , VC'length ) )
+                )
+            )then
+                RGBd <= x"FFF";
+            end if;
+
+	    -- Left 
+            if( (
+                    ( HC >= std_logic_vector( to_unsigned( ( ( 320 - 40 ) - ( PLATFORM_WIDTH / 2 ) ), HC'length ) ) ) and
+                    ( HC < std_logic_vector( to_unsigned( ( ( 320 - 40 ) + ( PLATFORM_WIDTH / 2 ) ), HC'length ) ) )
+                )
+                and
+                (
+                    VC = std_logic_vector( to_unsigned( ( ( 240 + 50 ) + ( PLATFORM_HEIGHT / 2 ) ) , VC'length ) )
+                )
+            )then
+                RGBd <= x"FFF";
+            end if;
+
+	    -- Right 
+            if( (
+                    ( HC >= std_logic_vector( to_unsigned( ( ( 320 + 40 ) - ( PLATFORM_WIDTH / 2 ) ), HC'length ) ) ) and
+                    ( HC < std_logic_vector( to_unsigned( ( ( 320 + 40 ) + ( PLATFORM_WIDTH / 2 ) ), HC'length ) ) )
+                )
+                and
+                (
+                    VC = std_logic_vector( to_unsigned( ( ( 240 + 50 ) + ( PLATFORM_HEIGHT / 2 ) ) , VC'length ) )
+                )
+            )then
+                RGBd <= x"FFF";
             end if;
 
 --			if (HC = LU_HC) and (VC = LU_VC) then
@@ -138,9 +182,7 @@ end process;
 -- output RGB mux:
 with display_on select
     RGB <= (others => '0') when '0',
-           RGBd when '1',
-           (others => '-') when others;
-
+           RGBd when '1';
 end;
 
 

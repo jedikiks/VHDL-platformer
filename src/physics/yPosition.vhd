@@ -26,7 +26,8 @@ architecture Behavioral of yPosition is
 begin
     posY_Q <= posY_Q_t;
 	-- inferred adders --
-	fall_newPosY <= std_logic_vector( to_unsigned( to_integer( unsigned( posY_Q_t ) ) + 5, 10 ) ); -- Assuming a height of 4
+	fall_newPosY <= std_logic_vector( to_unsigned( to_integer( unsigned( posY_Q_t ) ) + 1, 10 ) ); -- Assuming a height of 4
+	--fall_newPosY <= std_logic_vector( to_unsigned( to_integer( unsigned( posY_Q_t ) ) + 5, 10 ) ); -- Assuming a height of 4
 	posY_m1 <= std_logic_vector( to_unsigned( to_integer( unsigned( posY_Q_t ) ) - 1, 10 ) );        -- pos - 1
 
 	-- inferred multipliers --

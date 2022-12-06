@@ -28,7 +28,8 @@ begin
     
 	-- inferred adders --
 	posX_r_wp1 <= std_logic_vector( to_unsigned( to_integer( unsigned( posX_r ) ) + 5, 10 ) ); -- Assuming a height of 4
-	posX_l_pm1 <= std_logic_vector( to_unsigned( to_integer( unsigned( posX_l ) ) - 1, 10 ) );        -- pos - 1
+	posX_l_pm1 <= std_logic_vector( to_unsigned( to_integer( unsigned( posX_l ) ) - 5, 10 ) );        -- pos - 1
+	--posX_l_pm1 <= std_logic_vector( to_unsigned( to_integer( unsigned( posX_l ) ) - 1, 10 ) );        -- pos - 1
 
 	-- inferred multipliers --
     newX_r_addr <=  std_logic_vector( unsigned( posY_Q ) * 640 + unsigned( posX_r_wp1 ) );
